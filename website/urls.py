@@ -18,4 +18,5 @@ from django.conf.urls import url, include
 
 urlpatterns = [
     url(r'^', include('common.urls')),
+    url(r'^api/', include('dot.urls')),
 ]
