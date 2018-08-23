@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'common',
-    'dot',
 ]
 
 MIDDLEWARE = [
@@ -65,9 +64,11 @@ REST_FRAMEWORK = {
     ),
 }
 
+
 JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'common.utils.jwt_response_payload_handler',
 }
+
 
 ROOT_URLCONF = 'website.urls'
 
