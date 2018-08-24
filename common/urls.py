@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import url
+from rest_framework.routers import DefaultRouter
 
+from common.apis import UserViewSet
 
-urlpatterns = [
-]
+urlpatterns = []
+
+router = DefaultRouter()
+router.register(r'users', UserViewSet, 'user')
+
+urlpatterns += router.urls
