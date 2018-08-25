@@ -64,9 +64,10 @@ REST_FRAMEWORK = {
     ),
 }
 
-
+import datetime
 JWT_AUTH = {
     'JWT_RESPONSE_PAYLOAD_HANDLER': 'common.utils.jwt_response_payload_handler',
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=1),
 }
 
 

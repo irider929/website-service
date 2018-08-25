@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
@@ -20,3 +20,15 @@ class UserViewSet(viewsets.ViewSet):
         user = get_object_or_404(User, id=pk)
         serializer = UserSerializer(user)
         return Response(serializer.data)
+
+    def create(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        if User.objects.filter(username=username).exists():
+            msg = u'用户名已存在'
+            return Response({'msg': msg}, status=status.HTTP_400_BAD_REQUEST)
+        user = User(username=username)
+        user.set_password(password)
+        user.save()
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
