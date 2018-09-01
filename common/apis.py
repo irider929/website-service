@@ -36,11 +36,13 @@ class UserViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         user = get_object_or_404(User, id=pk)
         if request.user == user:
-            # 修改自己的first_name
             first_name = request.data.get('first_name')
+            password = request.data.get('password')
             if first_name:
                 user.first_name = first_name
-                user.save()
+            if password:
+                user.set_password(password)
+            user.save()
             user = User.objects.get(id=pk)
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
