@@ -73,3 +73,19 @@ class ArticleViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         article = get_object_or_404(Article, id=pk)
         return Response(article.serialize())
+
+    def list(self, request):
+        articles = Article.objects.all()
+        return Response([item.serialize() for item in articles])
+
+    def create(self, request):
+        if not request.auth:
+            return Response({}, status=status.HTTP_403_FORBIDDEN)
+        title = request.data.get('title')
+        body = request.data.get('body')
+        if title and body:
+            article = Article.objects.create(title=title, body=body, author=request.user)
+            return Response(article.serialize(), status=status.HTTP_201_CREATED)
+        else:
+            data = {'detail': u'title和body字段都为必填项'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
