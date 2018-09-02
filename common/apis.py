@@ -3,14 +3,26 @@ from rest_framework import viewsets, status
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 
+from common.models import UserExtra, Article
 from common.serializers import UserSerializer
 
 
 class UserViewSet(viewsets.ViewSet):
-    """
-    user
-    """
+    permission_classes = (IsAuthenticated,)
+
+    @staticmethod
+    def get_user_extra_or_create(user):
+        if not isinstance(user, User):
+            raise ValueError(u'param must be User type')
+        try:
+            user_extra = UserExtra.objects.get(user=user)
+        except UserExtra.DoesNotExist:
+            user_extra = UserExtra.objects.create(user=user)
+        return user_extra
+
     def list(self, request):
         queryset = User.objects.all()
         serializer = UserSerializer(queryset, many=True)
@@ -22,6 +34,7 @@ class UserViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
+        # 后面移除这个方法
         username = request.data.get('username')
         password = request.data.get('password')
         if User.objects.filter(username=username).exists():
@@ -47,3 +60,16 @@ class UserViewSet(viewsets.ViewSet):
             serializer = UserSerializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({}, status=status.HTTP_403_FORBIDDEN)
+
+    @action(methods=['GET'], detail=False)
+    def my_follow(self, request):
+        user_extra = self.get_user_extra_or_create(request.user)
+        serializer = UserSerializer(user_extra.follow.all(), many=True)
+        return Response(serializer.data)
+
+
+class ArticleViewSet(viewsets.ViewSet):
+
+    def retrieve(self, request, pk=None):
+        article = get_object_or_404(Article, id=pk)
+        return Response(article.serialize())
