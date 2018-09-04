@@ -69,6 +69,7 @@ class UserViewSet(viewsets.ViewSet):
 
 
 class ArticleViewSet(viewsets.ViewSet):
+
     def retrieve(self, request, pk=None):
         article = get_object_or_404(Article, id=pk)
         return Response(article.serialize())
@@ -81,10 +82,30 @@ class ArticleViewSet(viewsets.ViewSet):
         if not request.auth:
             return Response({}, status=status.HTTP_403_FORBIDDEN)
         title = request.data.get('title')
-        body = request.data.get('body')
-        if title and body:
-            article = Article.objects.create(title=title, body=body, author=request.user)
-            return Response(article.serialize(), status=status.HTTP_201_CREATED)
-        else:
-            data = {'detail': u'title和body字段都为必填项'}
+        body_markdown = request.data.get('body_markdown')
+        if not (title and body_markdown):
+            data = {'detail': u'title和body_markdown字段都为必填项'}
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        article = Article(
+            title=title, body_markdown=body_markdown, author=request.user
+        )
+        article.update_body_html()
+        article.save()
+        return Response(article.serialize())
+
+    def update(self, request, pk=None):
+        if not request.auth:
+            return Response({}, status=status.HTTP_403_FORBIDDEN)
+        article = get_object_or_404(Article, id=pk)
+        if article.author.username != request.user.username:
+            return Response({}, status=status.HTTP_403_FORBIDDEN)
+        title = request.data.get('title')
+        body_markdown = request.data.get('body_markdown')
+        if not (title and body_markdown):
+            data = {'detail': u'title和body_markdown字段都为必填项'}
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        article.title = title
+        article.body_markdown = body_markdown
+        article.update_body_html()
+        article.save()
+        return Response(article.serialize())
