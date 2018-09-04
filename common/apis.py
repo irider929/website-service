@@ -69,7 +69,6 @@ class UserViewSet(viewsets.ViewSet):
 
 
 class ArticleViewSet(viewsets.ViewSet):
-
     def retrieve(self, request, pk=None):
         article = get_object_or_404(Article, id=pk)
         return Response(article.serialize())
